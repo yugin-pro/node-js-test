@@ -6,9 +6,13 @@ import fetch from 'node-fetch';
 
 const bucket = new Storage(bqCredentials).bucket(cloudBucket);
 
+let dateList = getDateListBetween('2021-02-01', '2021-02-28')
+
+dateList.then( dateList => {
+    downloadLogsController(dateList)
+})
 
 
-downloadLogsController(['2022-03-27','2022-03-31','2022-04-01'])
 // downloadToGcs(27141880)
 
 
@@ -16,7 +20,7 @@ async function downloadLogsController(dateList = []) {
     for (let date of dateList) {
          createRequest('visits', date).then(request => downloadToGcs(request.log_request.request_id))
          createRequest('hits', date).then(request => downloadToGcs(request.log_request.request_id))
-         await new Promise(resolve => setTimeout(resolve, 180000))
+         await new Promise(resolve => setTimeout(resolve, 120000))
     }
 
 }
@@ -112,5 +116,19 @@ async function createRequest(source, date) {
     } else {
         return await response.text()
     }
+}
+
+
+function  getDateListBetween(startDate, endDate) {
+    let start = new Date(startDate)
+    let end =  new Date(endDate)
+    let arr = []
+    while (start <= end ) {
+        arr.push(new Intl.DateTimeFormat("fr-ca").format(start))
+        start.setDate(start.getDate() + 1)
+        console.log(start);
+    }
+    return new Promise(resolve => resolve(arr))
+    
 }
 
